@@ -30,6 +30,7 @@ def main():
     primary_PersonDF = createDataFrame(spark,os.path.join(DATA_PATH,config['Primary_Person_use']))
 
     #Question_1: Find the number of crashes (accidents) in which number of persons killed are male?
+
     Question_1DF = Analytics_1(primary_PersonDF)
     load_dataFrame(Question_1DF,os.path.join(OUT_PATH,config['Output1']))
 
@@ -104,6 +105,7 @@ def createDataFrame(spark,path):
             .option("header",True)\
             .option("infershema",True)\
             .load(path)
+
     return df
   
 
@@ -119,6 +121,8 @@ def Analytics_1(primary_PersonDF):
     
     return answer_1
 
+    #Answer found => 180
+
 def Analytics_2(unitsDF):
     '''
     How many two wheelers are booked for crashes? 
@@ -128,6 +132,8 @@ def Analytics_2(unitsDF):
           .select(countDistinct("CRASH_ID"))
     
     return answer_2
+
+    #Answer found => 757
 
 def Analytics_3(primary_PersonDF):
     '''
@@ -143,6 +149,7 @@ def Analytics_3(primary_PersonDF):
     
     return answer_3
 
+#Answer found => Texas
 
 def Analytics_4(primary_PersonDF,unitsDF):
     '''
@@ -163,6 +170,26 @@ def Analytics_4(primary_PersonDF,unitsDF):
         .where((col("row_number")>=5) & (col("row_number")<=15))
 
     return Grouped_veh_df
+
+'''
+Answer found for Question 4
+
+ VEH_MAKE_ID|
++------------+
+|      NISSAN|
+|       HONDA|
+|         GMC|
+|        JEEP|
+|     HYUNDAI|
+|         KIA|
+|    CHRYSLER|
+|FREIGHTLINER|
+|       MAZDA|
+|       LEXUS|
+|  VOLKSWAGEN|
++------------+
+
+'''
     
 
 def Analytics_5(primary_PersonDF,unitsDF):
@@ -183,6 +210,7 @@ def Analytics_5(primary_PersonDF,unitsDF):
         .where(col("row_number")==1)
     
     return Result_body_df
+
         
 def Analytics_6(primary_PersonDF,unitsDF):
     '''
@@ -205,6 +233,8 @@ def Analytics_6(primary_PersonDF,unitsDF):
     
     return Alchohol_Result
 
+#Answer 6 => ['78521', '75067', '76010', '78666', '78130']
+
 def Analytics_7(unitsDF,damageDF):
     '''
     Count of Distinct Crash IDs where No Damaged Property was observed and Damage Level (VEH_DMAG_SCL~) is above 4 and car avails Insurance
@@ -220,6 +250,8 @@ def Analytics_7(unitsDF,damageDF):
                     .count()
     
     return Grouped_DamagedDF
+
+#Answer found => 8860
 
 def Analytics_8(unitsDF,endorseDF,primary_PersonDF):
     '''
@@ -282,7 +314,7 @@ def Analytics_8(unitsDF,endorseDF,primary_PersonDF):
     
     return answerList
 
-    
+#Ans8 => ['FORD', 'CHEVROLET', 'TOYOTA', 'DODGE', 'HONDA']
 
 
 
