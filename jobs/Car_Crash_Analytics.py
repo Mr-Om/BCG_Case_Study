@@ -42,22 +42,18 @@ def main():
     load_data(spark,Question_3,os.path.join(OUT_PATH,config['Output3']))
 
     # Which are the Top 5th to 15th VEH_MAKE_IDs that contribute to a largest number of injuries including death
-
     Question_4DF = Analytics_4(primary_PersonDF,unitsDF)
     load_dataFrame(Question_4DF,os.path.join(OUT_PATH,config['Output4']))
 
     # For all the body styles involved in crashes, mention the top ethnic user group of each unique body style
- 
     Question_5DF = Analytics_5(primary_PersonDF,unitsDF)
     load_dataFrame(Question_5DF,os.path.join(OUT_PATH,config['Output5']))
 
     #Among the crashed cars, what are the Top 5 Zip Codes with highest number crashes with alcohols as the contributing factor to a crash (Use Driver Zip Code)
-
     Question_6 = Analytics_6(primary_PersonDF,unitsDF)
     load_data(spark,Question_6,os.path.join(OUT_PATH,config['Output6']))
     
     #Count of Distinct Crash IDs where No Damaged Property was observed and Damage Level (VEH_DMAG_SCL~) is above 4 and car avails Insurance
-
     Question_7 = Analytics_7(unitsDF,damageDF)
     load_data(spark,Question_7,os.path.join(OUT_PATH,config['Output7']))
 
@@ -74,7 +70,9 @@ def main():
     return None
 
 def load_data(spark,limit,outPath):
-    
+    '''
+    This function is helping to write integer/string or list of integer/string to output file
+    '''
     (spark\
     .sparkContext\
     .parallelize([limit])\
@@ -82,29 +80,38 @@ def load_data(spark,limit,outPath):
     .saveAsTextFile(outPath))
 
     return None
-#for loading a dataframe to output file
-def load_dataFrame(df,outPath):
-    (df
-     .coalesce(1)
-     .write
-     .format('text')
-     .save(outPath))
 
+def load_dataFrame(df,outPath):
+    '''
+    This function is helping to write dataframe to output file
+    '''
+    df\
+    .coalesce(1)\
+    .write\
+    .format('text')\
+    .save(outPath)
+
+    return None
 
 # Databricks notebook source
 def createDataFrame(spark,path):
-  df = spark\
-         .read\
-         .format("csv")\
-         .option("header",True)\
-         .option("infershema",True)\
-         .load(path)
-  return df
+    '''
+    This function is helping to create dataframe from our data csv files
+    '''
+    df = spark\
+            .read\
+            .format("csv")\
+            .option("header",True)\
+            .option("infershema",True)\
+            .load(path)
+    return df
   
 
 
 def Analytics_1(primary_PersonDF):
-
+    '''
+    Find the number of crashes (accidents) in which number of persons killed are male?
+    '''
     answer_1 = primary_PersonDF\
                 .filter(col("PRSN_GNDR_ID")=="MALE")\
                 .filter(col("PRSN_INJRY_SEV_ID")=="KILLED")\
@@ -113,6 +120,9 @@ def Analytics_1(primary_PersonDF):
     return answer_1
 
 def Analytics_2(unitsDF):
+    '''
+    How many two wheelers are booked for crashes? 
+    '''
     answer_2 = unitsDF\
           .filter((col("VEH_BODY_STYL_ID")=="MOTORCYCLE") | (col("VEH_BODY_STYL_ID")=="POLICE MOTORCYCLE"))\
           .select(countDistinct("CRASH_ID"))
@@ -120,6 +130,9 @@ def Analytics_2(unitsDF):
     return answer_2
 
 def Analytics_3(primary_PersonDF):
+    '''
+    Which state has highest number of accidents in which females are involved? 
+    '''
 
     answer_3 = primary_PersonDF\
            .filter(col("PRSN_GNDR_ID")=="FEMALE")\
@@ -133,7 +146,7 @@ def Analytics_3(primary_PersonDF):
 
 def Analytics_4(primary_PersonDF,unitsDF):
     '''
-        Join unitsDF and primary_PersonDF on CRASH_ID
+    Which are the Top 5th to 15th VEH_MAKE_IDs that contribute to a largest number of injuries including death
     '''
 
     Grouped_veh_df = primary_PersonDF.join(unitsDF,primary_PersonDF.CRASH_ID ==  unitsDF.CRASH_ID,"inner") \
@@ -154,8 +167,7 @@ def Analytics_4(primary_PersonDF,unitsDF):
 
 def Analytics_5(primary_PersonDF,unitsDF):
     '''
-    Join unitsDF and primary_PersonDF on CRASH_ID
-    Group by body styles and the rank the ethnicity
+    For all the body styles involved in crashes, mention the top ethnic user group of each unique body style  
     '''
     Grouped_body_df = primary_PersonDF.join(unitsDF,primary_PersonDF.CRASH_ID ==  unitsDF.CRASH_ID,"inner") \
                 .filter((unitsDF.VEH_BODY_STYL_ID!='NA') & (unitsDF.VEH_BODY_STYL_ID!='NOT REPORTED') & (unitsDF.VEH_BODY_STYL_ID!='UNKNOWN')&
@@ -173,6 +185,10 @@ def Analytics_5(primary_PersonDF,unitsDF):
     return Result_body_df
         
 def Analytics_6(primary_PersonDF,unitsDF):
+    '''
+    Among the crashed cars, what are the Top 5 Zip Codes with highest number crashes with alcohols as the 
+    contributing factor to a crash (Use Driver Zip Code)
+    '''
     Grouped_AlchoholDF = primary_PersonDF.join(unitsDF,primary_PersonDF.CRASH_ID ==  unitsDF.CRASH_ID,"inner") \
                     .filter((col("CONTRIB_FACTR_1_ID") == 'UNDER INFLUENCE - ALCOHOL') | (col("CONTRIB_FACTR_1_ID") == 'HAD BEEN DRINKING') |
                            (col("CONTRIB_FACTR_2_ID") == 'HAD BEEN DRINKING') | (col("CONTRIB_FACTR_2_ID") == 'UNDER INFLUENCE - ALCOHOL') |
@@ -190,6 +206,9 @@ def Analytics_6(primary_PersonDF,unitsDF):
     return Alchohol_Result
 
 def Analytics_7(unitsDF,damageDF):
+    '''
+    Count of Distinct Crash IDs where No Damaged Property was observed and Damage Level (VEH_DMAG_SCL~) is above 4 and car avails Insurance
+    '''
 
     Grouped_DamagedDF = unitsDF.join(damageDF,damageDF.CRASH_ID == unitsDF.CRASH_ID,"left") \
                     .filter((damageDF.DAMAGED_PROPERTY=='NONE') | (damageDF.DAMAGED_PROPERTY=='NONE1') | damageDF.CRASH_ID.isNull())\
@@ -203,14 +222,18 @@ def Analytics_7(unitsDF,damageDF):
     return Grouped_DamagedDF
 
 def Analytics_8(unitsDF,endorseDF,primary_PersonDF):
+    '''
+    Determine the Top 5 Vehicle Makes where drivers are charged with speeding related offences, has licensed 
+    Drivers, uses top 10 used vehicle colours and has car licensed with the Top 25 states with highest number 
+    of offences (to be deduced from the data)
+    '''
 
     # Find the Unlicenced drivers
     UnlicencedDF = endorseDF.select("CRASH_ID").where(col('DRVR_LIC_ENDORS_ID')=='UNLICENSED')
 
-    '''
-    Take all the drivers and left join with UnLicenced Driver and filter all the values
-    that are null for UnLicenced Driver.
-    '''
+    
+    #Take all the drivers and left join with UnLicenced Driver and filter all the values that are null for UnLicenced Driver.
+    
     LicencedDF = unitsDF.join(UnlicencedDF,UnlicencedDF.CRASH_ID == unitsDF.CRASH_ID,"left") \
                     .filter(UnlicencedDF.CRASH_ID.isNull())\
                     .drop(UnlicencedDF.CRASH_ID)
