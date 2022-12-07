@@ -15,8 +15,8 @@ def main():
         files=['configs/etl_config.json'])
     
     ROOT_DIR  = os.path.abspath(os.curdir)
-    DATA_PATH = ROOT_DIR+'/data_files'
-    OUT_PATH = ROOT_DIR+'/output_files'
+    DATA_PATH = os.path.join(ROOT_DIR,'data_files')
+    OUT_PATH = os.path.join(ROOT_DIR,'output_files')
 
     # log that main ETL job is starting
     log.warn('etl_job is up-and-running')
